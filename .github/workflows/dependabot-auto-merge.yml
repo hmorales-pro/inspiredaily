@@ -1,0 +1,98 @@
+name: Dependabot auto-merge
+
+# Se déclenche à la FIN de la CI, pas à l'ouverture de la PR : une PR dont la
+# CI échoue ne peut donc jamais être mergée automatiquement. Cela évite de
+# dépendre d'une règle de protection de branche ou du réglage "Allow
+# auto-merge" du dépôt.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Merge patch & minor updates
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    steps:
+      - name: Merge if the update is patch or minor only
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+
+            // Retrouver la PR associée au run. workflow_run.pull_requests est
+            // renseigné pour les branches du même dépôt (cas de Dependabot),
+            // mais on retombe sur une recherche par SHA si besoin.
+            let number = run.pull_requests?.[0]?.number;
+            if (!number) {
+              const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: run.head_sha,
+              });
+              number = data.find((pr) => pr.state === 'open')?.number;
+            }
+            if (!number) {
+              core.info('Aucune pull request associée à ce run, rien à faire.');
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: number,
+            });
+
+            if (pr.state !== 'open' || pr.draft) {
+              core.info(`PR #${number} non éligible (state=${pr.state}, draft=${pr.draft}).`);
+              return;
+            }
+
+            // La CI qui vient de passer doit bien correspondre à la tête
+            // actuelle de la PR : sinon un commit a été poussé depuis, et son
+            // résultat n'est pas encore connu.
+            if (pr.head.sha !== run.head_sha) {
+              core.info('La PR a avancé depuis ce run de CI, on attend le suivant.');
+              return;
+            }
+
+            // Dependabot inscrit le type de mise à jour dans le message de
+            // commit. On ne merge que si TOUTES les entrées sont patch ou
+            // minor : une seule majeure suffit à laisser la main à un humain.
+            const { data: commit } = await github.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha,
+            });
+            const updateTypes = [
+              ...commit.commit.message.matchAll(/update-type:\s*version-update:semver-(\w+)/g),
+            ].map((m) => m[1]);
+
+            if (updateTypes.length === 0) {
+              core.info('Aucun update-type trouvé, on laisse la PR à la revue humaine.');
+              return;
+            }
+            const major = updateTypes.filter((t) => t === 'major');
+            if (major.length > 0) {
+              core.notice(
+                `PR #${number} contient une montée majeure (${updateTypes.join(', ')}) : ` +
+                  'revue manuelle requise.'
+              );
+              return;
+            }
+
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: number,
+              merge_method: 'squash',
+            });
+            core.notice(`PR #${number} mergée automatiquement (${updateTypes.join(', ')}).`);

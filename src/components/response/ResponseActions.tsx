@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Edit2, RefreshCw } from "lucide-react";
+import { Profile } from '@/lib/supabase';
 
 interface ResponseActionsProps {
   isOptimizing: boolean;
-  profile: any;
+  profile: Profile | null;
   onEdit: () => void;
   onOptimize: () => void;
   showOptimize?: boolean;

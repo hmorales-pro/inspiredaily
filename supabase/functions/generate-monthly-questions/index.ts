@@ -43,7 +43,7 @@ serve(async (req) => {
 
     // Calculate missing dates for current and next month
     const missingDates = [];
-    let currentDate = new Date(firstDayCurrentMonth);
+    const currentDate = new Date(firstDayCurrentMonth);
     const endDate = new Date(firstDayNextMonth.getTime() + 31 * 24 * 60 * 60 * 1000); // End of next month
 
     while (currentDate < endDate) {

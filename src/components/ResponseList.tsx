@@ -1,5 +1,5 @@
 import React from 'react';
-import { Response } from '@/lib/supabase';
+import { Response, Profile } from '@/lib/supabase';
 import { ResponseCard } from './ResponseCard';
 
 interface ResponseListProps {
@@ -7,7 +7,7 @@ interface ResponseListProps {
   editingId: number | null;
   editedResponse: string;
   isOptimizing: boolean;
-  profile: any;
+  profile: Profile | null;
   onEdit: (response: Response) => void;
   onSave: (response: Response) => void;
   onOptimize: (response: Response) => void;

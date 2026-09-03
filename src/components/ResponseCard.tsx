@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Response } from '@/lib/supabase';
+import { Response, Profile } from '@/lib/supabase';
 import { ResponseContent } from './response/ResponseContent';
 import { ResponseEdit } from './response/ResponseEdit';
 
@@ -9,7 +9,7 @@ interface ResponseCardProps {
   editingId: number | null;
   editedResponse: string;
   isOptimizing: boolean;
-  profile: any;
+  profile: Profile | null;
   onEdit: (response: Response) => void;
   onSave: (response: Response) => void;
   onOptimize: (response: Response) => void;

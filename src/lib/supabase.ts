@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 
 const supabaseUrl = 'https://hpyvlzstxtdrqolmrlgj.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhweXZsenN0eHRkcnFvbG1ybGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMxMjc3NjEsImV4cCI6MjA0ODcwMzc2MX0.2COQ2dIHh7HhMnNDJnplarmMaZ9wGjnPvnRN8kSDHyk';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export interface Response {
   id?: number;

@@ -1,0 +1,64 @@
+version: 2
+
+updates:
+  # npm dependencies. Grouped so Dependabot opens a couple of consolidated PRs
+  # per week instead of one PR per package.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    labels:
+      - dependencies
+    groups:
+      # Security fixes land on their own so they are easy to review and merge fast.
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+          - react-router-dom
+      supabase:
+        patterns:
+          - "@supabase/*"
+      tooling:
+        patterns:
+          - vite
+          - "@vitejs/*"
+          - eslint
+          - "@eslint/*"
+          - typescript-eslint
+          - eslint-plugin-*
+          - typescript
+          - tailwindcss
+          - postcss
+          - autoprefixer
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+    groups:
+      actions:
+        patterns:
+          - "*"

@@ -1,11 +1,12 @@
 import React from 'react';
 import { ResponseActions } from './ResponseActions';
+import { Profile } from '@/lib/supabase';
 
 interface ResponseContentProps {
   title: string;
   content: string;
   isOptimizing: boolean;
-  profile: any;
+  profile: Profile | null;
   onEdit: () => void;
   onOptimize: () => void;
   isOriginalVersion?: boolean;

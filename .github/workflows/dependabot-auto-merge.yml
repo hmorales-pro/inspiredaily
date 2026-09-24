@@ -23,7 +23,7 @@ jobs:
       github.event.workflow_run.actor.login == 'dependabot[bot]'
     steps:
       - name: Merge if the update is patch or minor only
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const run = context.payload.workflow_run;
